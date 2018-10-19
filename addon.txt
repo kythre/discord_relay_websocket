@@ -1,0 +1,6 @@
+"AddonInfo"
+{
+	"name" "discord_relay_websockets"
+	"author_name" "Kythre"
+	"info" "yo mama"
+}
