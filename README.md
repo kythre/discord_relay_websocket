@@ -1,5 +1,5 @@
 # discord_relay_websocket
-little bit take from https://github.com/Re-Dream/discord_relay
+little bit taken from https://github.com/Re-Dream/discord_relay
 
 requires https://github.com/HunterNL/Gmod-Websockets
 
