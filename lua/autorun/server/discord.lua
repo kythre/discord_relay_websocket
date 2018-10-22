@@ -6,7 +6,7 @@ local a = a or {}
 if next(a) == nil then
 	a.endpoint = WS.Client("wss://gateway.discord.gg/?v=6&encoding=json", 443)
 	a.json = include("json.lua")
-	a.heartbeat_ack = false
+	a.heartbeat_ack = true --true for initial heartbeat
 	a.seq = "null"
 	a.channel = "501198430031577090"
 	a.token = ""
@@ -44,28 +44,11 @@ local function sendmessage(text)
 	HTTP(t_struct)
 end
 
-
 local function senddata(data_send)
 	data_send = a.json.encode(data_send)
 	a.endpoint:Send(data_send)
 	print("We sent: ", data_send)
 end
-
-local function heartbeat(delay)
-	timer.Simple(delay/1000, function()
-		if not heartbeat_ack then error("Heartbeat not Acknowledged") return end
-		
-		senddata({
-			["op"]= 1,
-			["d"]= seq
-		})
-		
-		heartbeat_ack = false
-		heartbeat(delay)
-	end	)
-end
-
-print(a.endpoint)
 
 if not a.endpoint:IsActive() then 
 	a.endpoint.echo = true
@@ -98,7 +81,21 @@ a.endpoint:on("message", function(data_received)
 		})
 		
 		--Start heartbeat
-		heartbeat(data_received_json["d"]["heartbeat_interval"])
+		timer.create("heartbeat", data_received_json["d"]["heartbeat_interval"]/1000, 0, function()
+			if not heartbeat_ack then 
+				timer.remove("heartbeat")
+				error("Heartbeat not Acknowledged") 
+				return 
+			end
+	
+			senddata({
+				["op"]= 1,
+				["d"]= seq
+			})
+			
+			heartbeat_ack = false
+			heartbeat(delay)
+		end)
     end
 	
 	--Heartbeat Acknowledged Opcode
@@ -106,7 +103,7 @@ a.endpoint:on("message", function(data_received)
 		heartbeat_ack = true
     end
 	
-	--Heartbeat whatever
+	--Opcode whatever
 	if data_received_json["op"] == 0 then
 		if data_received_json["t"]=="MESSAGE_CREATE" then
 			if not data_received_json["d"]["author"]["bot"] then
