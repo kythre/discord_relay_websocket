@@ -94,7 +94,6 @@ a.endpoint:on("message", function(data_received)
 			})
 			
 			heartbeat_ack = false
-			heartbeat(delay)
 		end)
     end
 	
